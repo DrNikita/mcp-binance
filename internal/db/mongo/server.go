@@ -24,9 +24,11 @@ func (ms *MongoServer) TradesCreatorWorkerPool(ctx context.Context, gNumber int,
 	wg.Add(gNumber)
 	for range gNumber {
 		go func() {
+			defer wg.Done()
 			for {
 				select {
 				case <-ctx.Done():
+					break
 				case tradeInfo := <-ch:
 					err := ms.createTradeInfo(ctx, tradeInfo)
 					if err != nil {

@@ -37,15 +37,6 @@ func main() {
 		}
 	}()
 
-	// som := map[string]any{
-	// 	"BTC": 34,
-	// 	"ETC": 43,
-	// 	"USD": 3,
-	// 	"TON": 60,
-	// }
-	// somm, _ := json.Marshal(som)
-	// tradesInfoCh <- somm
-
 	clientParams := websocket.ClientParams{
 		URL:          "wss://fstream.binance.com/ws",
 		MsgCap:       100,
@@ -64,7 +55,7 @@ func main() {
 	msgs := wsClient.Receive()
 	go func() {
 		for {
-			fmt.Println(string(<-msgs))
+			tradesInfoCh <- <-msgs
 		}
 	}()
 
