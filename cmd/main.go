@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"mcpbinance/internal/infrastructure/stdio"
 	"mcpbinance/internal/websocket"
+	"sync"
 	"time"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
@@ -15,27 +18,6 @@ import (
 
 func main() {
 	ctx := context.TODO()
-
-	client, err := mongo.Connect(options.Client().ApplyURI("mongodb://localhost:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("mongo client connected")
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-
-	dbServer := db.NewMongoServer(client)
-
-	tradesInfoCh := make(chan []byte)
-	errCh := dbServer.TradesCreatorWorkerPool(ctx, 5, tradesInfoCh)
-	go func() {
-		for err := range errCh {
-			fmt.Println(err.Error())
-		}
-	}()
 
 	clientParams := websocket.ClientParams{
 		URL:          "wss://fstream.binance.com/ws",
@@ -53,13 +35,47 @@ func main() {
 	}
 
 	msgs := wsClient.Receive()
-	go func() {
-		for {
-			tradesInfoCh <- <-msgs
+	client, err := mongo.Connect(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	// fmt.Println("mongo client connected")
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
 		}
 	}()
 
-	if err := wsClient.Run(ctx, []string{"etcusdt"}, []string{"aggTrade"}); err != nil {
+	wg := sync.WaitGroup{}
+
+	dbServer := db.NewMongoServer(client)
+	parallel := 5
+	errCh := dbServer.TradesCreatorWorkerPool(ctx, parallel, msgs)
+	wg.Go(
+		func() {
+			defer wg.Done()
+			for err := range errCh {
+				fmt.Println(err.Error())
+			}
+		},
+	)
+
+	wg.Go(
+		func() {
+			defer wg.Done()
+			if err := wsClient.Run(ctx, []string{"btcusdt"}, []string{"aggTrade"}); err != nil {
+				log.Fatal(err)
+			}
+		},
+	)
+
+	mcpServer := mcp.NewServer(&mcp.Implementation{Name: "SCAM", Version: "v1.0.0"}, nil)
+	stdioTransport := stdio.NewStdioTrarnsport(dbServer)
+	stdioTransport.RegisterTools(mcpServer)
+
+	if err := mcpServer.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Fatal(err)
 	}
+
+	wg.Wait()
 }

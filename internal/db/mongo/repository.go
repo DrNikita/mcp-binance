@@ -3,6 +3,9 @@ package mongo
 import (
 	"context"
 
+	"mcpbinance/internal/entity"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -23,6 +26,21 @@ func (mr *mongoRepository) insertTradeInfo(ctx context.Context, tradeInfo map[st
 	return nil
 }
 
-func (r *mongoRepository) findTradeInfo(ctx context.Context) {
-	// collection := r.client.Database("mcp-binance").Collection("trade")
+func (r *mongoRepository) findTradesInfo(ctx context.Context, filter bson.M) ([]entity.Trade, error) {
+	collection := r.client.Database("mcp-binance").Collection("trade")
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	trades := make([]entity.Trade, 0)
+	for cursor.Next(ctx) {
+		var trade entity.Trade
+		if err := bson.Unmarshal(cursor.Current, &trade); err != nil {
+			return nil, err
+		}
+		trades = append(trades, trade)
+	}
+
+	return trades, nil
 }
