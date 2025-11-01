@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -73,7 +73,7 @@ func (ms *MongoServer) GetTradesInfo(ctx context.Context, periodSeconds int) ([]
 		return nil, err
 	}
 
-	fmt.Println(filter)
+	log.Printf("filter: %v", filter)
 
 	return trades, nil
 }

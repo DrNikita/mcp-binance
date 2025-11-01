@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"mcpbinance/internal/infrastructure/stdio"
 	"mcpbinance/internal/websocket"
@@ -55,7 +54,7 @@ func main() {
 		func() {
 			defer wg.Done()
 			for err := range errCh {
-				fmt.Println(err.Error())
+				log.Printf("trade processing error: %v", err)
 			}
 		},
 	)
