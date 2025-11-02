@@ -59,18 +59,13 @@ func main() {
 		},
 	)
 
-	wg.Go(
-		func() {
-			defer wg.Done()
-			if err := wsClient.Run(ctx, []string{"btcusdt"}, []string{"aggTrade"}); err != nil {
-				log.Fatal(err)
-			}
-		},
-	)
-
 	mcpServer := mcp.NewServer(&mcp.Implementation{Name: "SCAM", Version: "v1.0.0"}, nil)
-	stdioTransport := stdio.NewStdioTrarnsport(dbServer)
+	monitorService := websocket.NewStockMonitorService(wsClient, &wg)
+
+	stdioTransport := stdio.NewStdioTrarnsport(dbServer, monitorService)
 	stdioTransport.RegisterTools(mcpServer)
+
+	monitorService.RunSymbolsMonitoring(ctx, []string{"etcusdt"}, []string{"aggTrade"})
 
 	if err := mcpServer.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Fatal(err)

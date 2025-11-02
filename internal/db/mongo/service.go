@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -66,8 +67,9 @@ func (ms *MongoServer) createTradeInfo(ctx context.Context, tradeInfo []byte) er
 	return nil
 }
 
-func (ms *MongoServer) GetTradesInfo(ctx context.Context, periodSeconds int) ([]entity.Trade, error) {
-	filter := createFilterParams(periodSeconds)
+func (ms *MongoServer) GetTradesInfo(ctx context.Context, symbol string, periodSeconds int) ([]entity.Trade, error) {
+	upperSymbol := strings.ToUpper(symbol)
+	filter := createFilterParams(upperSymbol, periodSeconds)
 	trades, err := ms.repo.findTradesInfo(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -78,12 +80,8 @@ func (ms *MongoServer) GetTradesInfo(ctx context.Context, periodSeconds int) ([]
 	return trades, nil
 }
 
-type filterParams struct {
-	eventTime bson.M `bson:"E"`
-}
-
-func createFilterParams(seconds int) bson.M {
+func createFilterParams(symbol string, seconds int) bson.M {
 	now := time.Now().UnixMilli()
 	dateFrom := now - int64(seconds*1000)
-	return bson.M{"E": bson.M{"$gte": dateFrom}}
+	return bson.M{"s": symbol, "E": bson.M{"$gte": dateFrom}}
 }
