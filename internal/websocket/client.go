@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mcpbinance/internal/websocket/enum"
 	"sync"
 	"time"
 
@@ -45,11 +46,11 @@ type WebsocketClient struct {
 }
 
 type clientHooks interface {
-	buildSubs(symbols, streamTypes []string) []string
+	buildSubs(symbols []enum.Symbol, streamTypes []enum.StreamType) []string
 	makeSubMsg(streams []string) map[string]any
 }
 
-func (c *WebsocketClient) Run(ctx context.Context, symbols, streamTypes []string) error {
+func (c *WebsocketClient) Run(ctx context.Context, symbols []enum.Symbol, streamTypes []enum.StreamType) error {
 	// log.Printf("[%sClient] starting client with URL: %s", c.wc.name, c.wc.url)
 	defer func() {
 		close(c.msgCh)
@@ -104,7 +105,7 @@ func (c *WebsocketClient) connect(ctx context.Context) error {
 	return nil
 }
 
-func (c *WebsocketClient) initSubscription(symbols, streamTypes []string) {
+func (c *WebsocketClient) initSubscription(symbols []enum.Symbol, streamTypes []enum.StreamType) {
 	streams := c.hooks.buildSubs(symbols, streamTypes)
 
 	c.subsMu.Lock()

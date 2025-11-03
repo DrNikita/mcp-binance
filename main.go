@@ -5,6 +5,7 @@ import (
 	"log"
 	"mcpbinance/internal/infrastructure/stdio"
 	"mcpbinance/internal/websocket"
+	"mcpbinance/internal/websocket/enum"
 	"sync"
 	"time"
 
@@ -65,7 +66,9 @@ func main() {
 	stdioTransport := stdio.NewStdioTrarnsport(dbServer, monitorService)
 	stdioTransport.RegisterTools(mcpServer)
 
-	monitorService.RunSymbolsMonitoring(ctx, []string{"etcusdt"}, []string{"aggTrade"})
+	symbols := []enum.Symbol{enum.BTCUSDT}
+	streamTypes := []enum.StreamType{enum.AggTrade}
+	monitorService.RunSymbolsMonitoring(ctx, symbols, streamTypes)
 
 	if err := mcpServer.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Fatal(err)

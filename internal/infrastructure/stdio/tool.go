@@ -2,7 +2,9 @@ package stdio
 
 import (
 	"context"
+	"fmt"
 	"mcpbinance/internal/entity"
+	"mcpbinance/internal/websocket/enum"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -13,7 +15,7 @@ type Store interface {
 }
 
 type StockMonitorer interface {
-	RunSymbolsMonitoring(ctx context.Context, symbols, streamTypes []string)
+	RunSymbolsMonitoring(ctx context.Context, symbols []enum.Symbol, streamTypes []enum.StreamType)
 }
 
 type StdioTrarnsport struct {
@@ -41,6 +43,23 @@ func (st *StdioTrarnsport) GetTradePairsHistory(ctx context.Context, req *mcp.Ca
 }
 
 func (st *StdioTrarnsport) RunSymbolsMonitoring(ctx context.Context, req *mcp.CallToolRequest, input RunStockMonitoringInput) (*mcp.CallToolResult, struct{}, error) {
-	st.stockMonitorService.RunSymbolsMonitoring(ctx, input.Symbols, input.StreamTypes)
+	symbols := make([]enum.Symbol, 0)
+	streamTypes := make([]enum.StreamType, 0)
+	for _, symbol := range input.Symbols {
+		eSymbol, err := enum.NewSymbol(symbol)
+		if err != nil {
+			return nil, struct{}{}, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
+		}
+		symbols = append(symbols, eSymbol)
+	}
+	for _, streamType := range input.StreamTypes {
+		eStreamType, err := enum.NewStreamType(streamType)
+		if err != nil {
+			return nil, struct{}{}, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
+		}
+		streamTypes = append(streamTypes, eStreamType)
+	}
+
+	st.stockMonitorService.RunSymbolsMonitoring(ctx, symbols, streamTypes)
 	return nil, struct{}{}, nil
 }
