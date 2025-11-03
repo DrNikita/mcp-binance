@@ -43,23 +43,32 @@ func (st *StdioTrarnsport) GetTradePairsHistory(ctx context.Context, req *mcp.Ca
 }
 
 func (st *StdioTrarnsport) RunSymbolsMonitoring(ctx context.Context, req *mcp.CallToolRequest, input RunStockMonitoringInput) (*mcp.CallToolResult, struct{}, error) {
-	symbols := make([]enum.Symbol, 0)
-	streamTypes := make([]enum.StreamType, 0)
-	for _, symbol := range input.Symbols {
-		eSymbol, err := enum.NewSymbol(symbol)
-		if err != nil {
-			return nil, struct{}{}, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
-		}
-		symbols = append(symbols, eSymbol)
-	}
-	for _, streamType := range input.StreamTypes {
-		eStreamType, err := enum.NewStreamType(streamType)
-		if err != nil {
-			return nil, struct{}{}, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
-		}
-		streamTypes = append(streamTypes, eStreamType)
+	symbols, streamTypes, err := createStreamParams(input)
+	if err != nil {
+		return nil, struct{}{}, err
 	}
 
 	st.stockMonitorService.RunSymbolsMonitoring(ctx, symbols, streamTypes)
 	return nil, struct{}{}, nil
+}
+
+func createStreamParams(monitoringData RunStockMonitoringInput) ([]enum.Symbol, []enum.StreamType, error) {
+	symbols := make([]enum.Symbol, 0)
+	streamTypes := make([]enum.StreamType, 0)
+	for _, symbol := range monitoringData.Symbols {
+		eSymbol, err := enum.NewSymbol(symbol)
+		if err != nil {
+			return nil, nil, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
+		}
+		symbols = append(symbols, eSymbol)
+	}
+	for _, streamType := range monitoringData.StreamTypes {
+		eStreamType, err := enum.NewStreamType(streamType)
+		if err != nil {
+			return nil, nil, fmt.Errorf("%s: %w", "failed to run symbols monitoring", err)
+		}
+		streamTypes = append(streamTypes, eStreamType)
+	}
+
+	return symbols, streamTypes, nil
 }
