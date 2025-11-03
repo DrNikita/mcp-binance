@@ -2,10 +2,9 @@ package stdio
 
 import "mcpbinance/internal/entity"
 
-// TODO: add symbol param for search
 type GetTradePairsHistoryInput struct {
 	Seconds int    `json:"seconds" jsonschema:"the number of seconds from the current date for which information is obtained"`
-	Symbol  string `json:"symbol" jsonschema:"symbol to fetch price changes history"`
+	Symbol  string `json:"symbol" jsonschema:"symbol to fetch price changes history; default running stream is BTCUSDT, but can be different if editional streams were launched"`
 }
 
 type GetTradePairsHistoryOutput struct {
