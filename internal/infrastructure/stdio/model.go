@@ -13,6 +13,6 @@ type GetTradePairsHistoryOutput struct {
 }
 
 type RunStockMonitoringInput struct {
-	Symbols     []string `json:"symbols" jsonschema:"which trade pairs to monitor"`
-	StreamTypes []string `json:"streamTypes" jsonschema:"functions to apply for monitoring from binance.com"`
+	Symbols     []string `json:"symbols" jsonschema:"which trade pairs to monitor; avalible options: BTCUSDT,ETHUSDT,BNBUSDT,SOLUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,AVAXUSDT,DOTUSDT,LINKUSDT,LTCUSDT,NEARUSDT,ATOMUSDT,FILUSDT,ETCUSDT,UNIUSDT,MATICUSDT,SUIUSDT"`
+	StreamTypes []string `json:"streamTypes" jsonschema:"functions to apply for monitoring from binance.com; avalible options: aggTrade,markPriceUpdate,kline,continuous_kline,24hrTicker,24hrMiniTicker,bookTicker,forceOrder,depthUpdate,compositeIndex,contractInfo,assetIndexUpdate"`
 }
