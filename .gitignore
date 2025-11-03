@@ -1,4 +1,4 @@
 /data
 /vendor
-.env
+*.env
 mcp-binance
