@@ -73,8 +73,10 @@ func (a *Application) Run(ctx context.Context) error {
 	stdioTransport := stdio.NewStdioTrarnsport(dbServer, monitorService)
 	stdioTransport.RegisterTools(mcpServer)
 
-	symbols := []enum.Symbol{enum.BTCUSDT}
-	streamTypes := []enum.StreamType{enum.AggTrade}
+	symbols, streamTypes, err := enum.CreateStreamParams(a.cfg.StartupSymbols, a.cfg.StartupStreamTypes)
+	if err != nil {
+		return err
+	}
 	monitorService.RunSymbolsMonitoring(ctx, symbols, streamTypes)
 
 	if err := mcpServer.Run(ctx, &mcp.StdioTransport{}); err != nil {
