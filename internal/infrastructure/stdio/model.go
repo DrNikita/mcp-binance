@@ -3,8 +3,9 @@ package stdio
 import "mcpbinance/internal/entity"
 
 type GetTradePairsHistoryInput struct {
-	Seconds int    `json:"seconds" jsonschema:"the number of seconds from the current date for which information is obtained"`
-	Symbol  string `json:"symbol" jsonschema:"symbol to fetch price changes history; default running stream is BTCUSDT, but can be different if editional streams were launched"`
+	DateFromTimestamp int    `json:"date_from" jsonschema:"start date as timestamp in milliseconds to get trades"`
+	DateToTimestamp   int    `json:"date_to" jsonschema:"end date as timestamp in milliseconds to get trades; zero means current time"`
+	Symbol            string `json:"symbol" jsonschema:"symbol to fetch trades; default running stream is BTCUSDT, but can be different if editional streams were launched"`
 }
 
 type GetTradePairsHistoryOutput struct {

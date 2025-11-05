@@ -6,7 +6,6 @@ import (
 	"log"
 	"strings"
 	"sync"
-	"time"
 
 	"mcpbinance/internal/entity"
 
@@ -67,9 +66,9 @@ func (ms *MongoServer) createTradeInfo(ctx context.Context, tradeInfo []byte) er
 	return nil
 }
 
-func (ms *MongoServer) GetTradesInfo(ctx context.Context, symbol string, periodSeconds int) ([]entity.Trade, error) {
+func (ms *MongoServer) GetTradesInfo(ctx context.Context, symbol string, dateFrom, dateTo int) ([]entity.Trade, error) {
 	upperSymbol := strings.ToUpper(symbol)
-	filter := createFilterParams(upperSymbol, periodSeconds)
+	filter := createFilterParams(upperSymbol, dateFrom, dateTo)
 	trades, err := ms.repo.findTradesInfo(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -80,8 +79,9 @@ func (ms *MongoServer) GetTradesInfo(ctx context.Context, symbol string, periodS
 	return trades, nil
 }
 
-func createFilterParams(symbol string, seconds int) bson.M {
-	now := time.Now().UnixMilli()
-	dateFrom := now - int64(seconds*1000)
-	return bson.M{"s": symbol, "E": bson.M{"$gte": dateFrom}}
+func createFilterParams(symbol string, dateFrom, dateTo int) bson.M {
+	if dateTo == 0 {
+		return bson.M{"s": symbol, "E": bson.M{"$gte": dateFrom}}
+	}
+	return bson.M{"s": symbol, "E": bson.M{"$gte": dateFrom, "$lte": dateTo}}
 }

@@ -24,13 +24,13 @@ func newMongoRepository(client *mongo.Client) *mongoRepository {
 
 func (mr *mongoRepository) ensureUniqueIndex(ctx context.Context) {
 	collection := mr.client.Database("mcp-binance").Collection("trade")
-	
+
 	// Create unique index on AggregateTradeID (field "a")
 	indexModel := mongo.IndexModel{
-		Keys: bson.D{{Key: "a", Value: 1}},
+		Keys:    bson.D{{Key: "a", Value: 1}},
 		Options: options.Index().SetUnique(true).SetName("unique_aggregate_trade_id"),
 	}
-	
+
 	_, err := collection.Indexes().CreateOne(ctx, indexModel)
 	if err != nil {
 		// Index might already exist, which is fine

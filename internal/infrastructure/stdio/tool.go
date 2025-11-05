@@ -10,7 +10,7 @@ import (
 
 type Store interface {
 	TradesCreatorWorkerPool(context.Context, int, <-chan []byte) chan error
-	GetTradesInfo(ctx context.Context, symbol string, periodSeconds int) ([]entity.Trade, error)
+	GetTradesInfo(ctx context.Context, symbol string, dateFrom, dateTo int) ([]entity.Trade, error)
 }
 
 type StockMonitorer interface {
@@ -32,7 +32,7 @@ func (st *StdioTrarnsport) RegisterTools(mcpServer *mcp.Server) {
 }
 
 func (st *StdioTrarnsport) GetTradePairsHistory(ctx context.Context, req *mcp.CallToolRequest, input GetTradePairsHistoryInput) (*mcp.CallToolResult, GetTradePairsHistoryOutput, error) {
-	trades, err := st.dbServer.GetTradesInfo(ctx, input.Symbol, input.Seconds)
+	trades, err := st.dbServer.GetTradesInfo(ctx, input.Symbol, input.DateFromTimestamp, input.DateToTimestamp)
 	if err != nil {
 		return nil, GetTradePairsHistoryOutput{}, err
 	}
